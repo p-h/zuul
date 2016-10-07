@@ -1,4 +1,5 @@
 package org.hurlimann.zuul;
+
 /**
  * Class Room - a room in an adventure game.
  *
