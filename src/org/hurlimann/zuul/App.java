@@ -1,3 +1,4 @@
+package org.hurlimann.zuul;
 
 public class App {
 
