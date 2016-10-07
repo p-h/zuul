@@ -1,5 +1,7 @@
 package org.hurlimann.zuul;
 
+import java.util.HashMap;
+
 /**
  * Class Room - a room in an adventure game.
  *
@@ -16,10 +18,7 @@ package org.hurlimann.zuul;
  */
 public class Room {
 	public String description;
-	public Room northExit;
-	public Room southExit;
-	public Room eastExit;
-	public Room westExit;
+	private HashMap<String, Room> exits;
 
 	/**
 	 * Create a room described "description". Initially, it has no exits.
@@ -30,6 +29,7 @@ public class Room {
 	 */
 	public Room(String description) {
 		this.description = description;
+		exits = new HashMap<String, Room>();
 	}
 
 	/**
@@ -47,13 +47,13 @@ public class Room {
 	 */
 	public void setExits(Room north, Room east, Room south, Room west) {
 		if (north != null)
-			northExit = north;
+			exits.put("south", south);
 		if (east != null)
-			eastExit = east;
+			exits.put("east", east);
 		if (south != null)
-			southExit = south;
+			exits.put("south", south);
 		if (west != null)
-			westExit = west;
+			exits.put("west", west);
 	}
 
 	/**
@@ -63,4 +63,13 @@ public class Room {
 		return description;
 	}
 
+	/**
+	 *
+	 * @param direction
+	 *            we are trying to go to
+	 * @return room that is in that direction, null if there is none
+	 */
+	public Room getExit(String direction) {
+		return exits.get(direction);
+	}
 }
