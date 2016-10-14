@@ -1,5 +1,11 @@
 package org.hurlimann.zuul;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 /**
  * This class is the main class of the "World of Zuul" application. "World of
  * Zuul" is a very simple, text based adventure game. Users can walk around some
@@ -20,13 +26,29 @@ package org.hurlimann.zuul;
 public class Game {
 	private Parser parser;
 	private Room currentRoom;
+	private PrintStream outStream;
+	private InputStream inStream;
 
 	/**
 	 * Create the game and initialise its internal map.
 	 */
 	public Game() {
 		createRooms();
-		parser = new Parser();
+	}
+
+	public void Initialize() {
+		Socket socket;
+		try (ServerSocket serverSocket = new ServerSocket(37888)) {
+			socket = serverSocket.accept();
+			outStream = new PrintStream(socket.getOutputStream());
+
+			inStream = socket.getInputStream();
+		} catch (IOException e) {
+			System.err.println(
+					"Unable to establish network connection. Are you sure you are allowed to listen on this port?");
+		}
+
+		parser = new Parser(inStream);
 	}
 
 	/**
@@ -63,6 +85,7 @@ public class Game {
 	 * Main play routine. Loops until end of play.
 	 */
 	public void play() {
+
 		printWelcome();
 
 		// Enter the main command loop. Here we repeatedly read commands and
@@ -73,19 +96,19 @@ public class Game {
 			Command command = parser.getCommand();
 			finished = processCommand(command);
 		}
-		System.out.println("Thank you for playing.  Good bye.");
+		outStream.println("Thank you for playing.  Good bye.");
 	}
 
 	/**
 	 * Print out the opening message for the player.
 	 */
 	private void printWelcome() {
-		System.out.println();
-		System.out.println("Welcome to the World of Zuul!");
-		System.out.println("World of Zuul is a new, incredibly boring adventure game.");
-		System.out.println("Type '" + CommandWord.HELP + "' if you need help.");
-		System.out.println();
-		System.out.println(currentRoom.getLongDescription());
+		outStream.println();
+		outStream.println("Welcome to the World of Zuul!");
+		outStream.println("World of Zuul is a new, incredibly boring adventure game.");
+		outStream.println("Type '" + CommandWord.HELP + "' if you need help.");
+		outStream.println();
+		outStream.println(currentRoom.getLongDescription());
 	}
 
 	/**
@@ -102,7 +125,7 @@ public class Game {
 
 		switch (commandWord) {
 		case UNKNOWN:
-			System.out.println("I don't know what you mean...");
+			outStream.println("I don't know what you mean...");
 			break;
 
 		case HELP:
@@ -127,11 +150,11 @@ public class Game {
 	 * message and a list of the command words.
 	 */
 	private void printHelp() {
-		System.out.println("You are lost. You are alone. You wander");
-		System.out.println("around at the university.");
-		System.out.println();
-		System.out.println("Your command words are:");
-		parser.showCommands();
+		outStream.println("You are lost. You are alone. You wander");
+		outStream.println("around at the university.");
+		outStream.println();
+		outStream.println("Your command words are:");
+		outStream.println(parser.getCommandsString());
 	}
 
 	/**
@@ -141,7 +164,7 @@ public class Game {
 	private void goRoom(Command command) {
 		if (!command.hasSecondWord()) {
 			// if there is no second word, we don't know where to go...
-			System.out.println("Go where?");
+			outStream.println("Go where?");
 			return;
 		}
 
@@ -151,10 +174,10 @@ public class Game {
 		Room nextRoom = currentRoom.getExit(direction);
 
 		if (nextRoom == null) {
-			System.out.println("There is no door!");
+			outStream.println("There is no door!");
 		} else {
 			currentRoom = nextRoom;
-			System.out.println(currentRoom.getLongDescription());
+			outStream.println(currentRoom.getLongDescription());
 		}
 	}
 
@@ -166,7 +189,7 @@ public class Game {
 	 */
 	private boolean quit(Command command) {
 		if (command.hasSecondWord()) {
-			System.out.println("Quit what?");
+			outStream.println("Quit what?");
 			return false;
 		} else {
 			return true; // signal that we want to quit

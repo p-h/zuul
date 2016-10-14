@@ -1,5 +1,6 @@
 package org.hurlimann.zuul;
 
+import java.io.InputStream;
 import java.util.Scanner;
 
 /**
@@ -24,10 +25,13 @@ public class Parser {
 
 	/**
 	 * Create a parser to read from the terminal window.
+	 * 
+	 * @param inputStream
+	 *            Input stream to read from. e.g. Stdin or network socket
 	 */
-	public Parser() {
+	public Parser(InputStream inputStream) {
 		commands = new CommandWords();
-		reader = new Scanner(System.in);
+		reader = new Scanner(inputStream);
 	}
 
 	/**
@@ -59,7 +63,7 @@ public class Parser {
 	/**
 	 * Print out a list of valid command words.
 	 */
-	public void showCommands() {
-		commands.showAll();
+	public String getCommandsString() {
+		return commands.getCommandsString();
 	}
 }

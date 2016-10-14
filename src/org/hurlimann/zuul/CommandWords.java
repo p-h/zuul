@@ -57,12 +57,10 @@ public class CommandWords {
 	}
 
 	/**
-	 * Print all valid commands to System.out.
+	 * 
+	 * @return all valid commands as a space separated string.
 	 */
-	public void showAll() {
-		for (String command : validCommands.keySet()) {
-			System.out.print(command + "  ");
-		}
-		System.out.println();
+	public String getCommandsString() {
+		return validCommands.keySet().stream().reduce("", (head, tail) -> head + " " + tail).trim();
 	}
 }
