@@ -14,7 +14,7 @@ package org.hurlimann.zuul;
  * commands that the parser returns.
  * 
  * @author Michael Kölling and David J. Barnes
- * @version 2011.07.31
+ * @version 2011.08.10
  */
 
 public class Game {
@@ -43,11 +43,18 @@ public class Game {
 		office = new Room("in the computing admin office");
 
 		// initialise room exits
-		outside.setExits(null, theater, lab, pub);
-		theater.setExits(null, null, null, outside);
-		pub.setExits(null, outside, null, null);
-		lab.setExits(outside, office, null, null);
-		office.setExits(null, null, null, lab);
+		outside.setExit("east", theater);
+		outside.setExit("south", lab);
+		outside.setExit("west", pub);
+
+		theater.setExit("west", outside);
+
+		pub.setExit("east", outside);
+
+		lab.setExit("north", outside);
+		lab.setExit("east", office);
+
+		office.setExit("west", lab);
 
 		currentRoom = outside; // start game outside
 	}
@@ -76,31 +83,9 @@ public class Game {
 		System.out.println();
 		System.out.println("Welcome to the World of Zuul!");
 		System.out.println("World of Zuul is a new, incredibly boring adventure game.");
-		System.out.println("Type 'help' if you need help.");
+		System.out.println("Type '" + CommandWord.HELP + "' if you need help.");
 		System.out.println();
-
-		printLocationInfo();
-	}
-
-	/**
-	 * Print current location of Player
-	 */
-	private void printLocationInfo() {
-		System.out.println("You are " + currentRoom.getDescription());
-		System.out.print("Exits: ");
-		if (currentRoom.getExit("north") != null) {
-			System.out.print("north ");
-		}
-		if (currentRoom.getExit("east") != null) {
-			System.out.print("east ");
-		}
-		if (currentRoom.getExit("south") != null) {
-			System.out.print("south ");
-		}
-		if (currentRoom.getExit("west") != null) {
-			System.out.print("west ");
-		}
-		System.out.println();
+		System.out.println(currentRoom.getLongDescription());
 	}
 
 	/**
@@ -113,20 +98,25 @@ public class Game {
 	private boolean processCommand(Command command) {
 		boolean wantToQuit = false;
 
-		if (command.isUnknown()) {
+		CommandWord commandWord = command.getCommandWord();
+
+		switch (commandWord) {
+		case UNKNOWN:
 			System.out.println("I don't know what you mean...");
-			return false;
-		}
+			break;
 
-		String commandWord = command.getCommandWord();
-		if (commandWord.equals("help")) {
+		case HELP:
 			printHelp();
-		} else if (commandWord.equals("go")) {
-			goRoom(command);
-		} else if (commandWord.equals("quit")) {
-			wantToQuit = quit(command);
-		}
+			break;
 
+		case GO:
+			goRoom(command);
+			break;
+
+		case QUIT:
+			wantToQuit = quit(command);
+			break;
+		}
 		return wantToQuit;
 	}
 
@@ -141,7 +131,7 @@ public class Game {
 		System.out.println("around at the university.");
 		System.out.println();
 		System.out.println("Your command words are:");
-		System.out.println("   go quit help");
+		parser.showCommands();
 	}
 
 	/**
@@ -158,25 +148,13 @@ public class Game {
 		String direction = command.getSecondWord();
 
 		// Try to leave current room.
-		Room nextRoom = null;
-		if (direction.equals("north")) {
-			nextRoom = currentRoom.getExit("north");
-		}
-		if (direction.equals("east")) {
-			nextRoom = currentRoom.getExit("east");
-		}
-		if (direction.equals("south")) {
-			nextRoom = currentRoom.getExit("south");
-		}
-		if (direction.equals("west")) {
-			nextRoom = currentRoom.getExit("west");
-		}
+		Room nextRoom = currentRoom.getExit(direction);
 
 		if (nextRoom == null) {
 			System.out.println("There is no door!");
 		} else {
 			currentRoom = nextRoom;
-			printLocationInfo();
+			System.out.println(currentRoom.getLongDescription());
 		}
 	}
 

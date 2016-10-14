@@ -8,7 +8,7 @@ import java.util.Scanner;
  * 
  * This parser reads user input and tries to interpret it as an "Adventure"
  * command. Every time it is called it reads a line from the terminal and tries
- * to interpret the line as a two word command. It returns the command as an
+ * to interpret the line as a two-word command. It returns the command as an
  * object of class Command.
  *
  * The parser has a set of known command words. It checks user input against the
@@ -16,7 +16,7 @@ import java.util.Scanner;
  * a command object that is marked as an unknown command.
  * 
  * @author Michael Kölling and David J. Barnes
- * @version 2011.07.31
+ * @version 2011.08.10
  */
 public class Parser {
 	private CommandWords commands; // holds all valid command words
@@ -52,12 +52,13 @@ public class Parser {
 			}
 		}
 
-		// Now check whether this word is known. If so, create a command
-		// with it. If not, create a "null" command (for unknown command).
-		if (commands.isCommand(word1)) {
-			return new Command(word1, word2);
-		} else {
-			return new Command(null, word2);
-		}
+		return new Command(commands.getCommandWord(word1), word2);
+	}
+
+	/**
+	 * Print out a list of valid command words.
+	 */
+	public void showCommands() {
+		commands.showAll();
 	}
 }
