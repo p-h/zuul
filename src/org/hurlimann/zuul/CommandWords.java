@@ -22,7 +22,7 @@ public class CommandWords {
 	 * Constructor - initialise the command words.
 	 */
 	public CommandWords() {
-		validCommands = new HashMap<String, CommandWord>();
+		validCommands = new HashMap<>();
 		for (CommandWord command : CommandWord.values()) {
 			if (command != CommandWord.UNKNOWN) {
 				validCommands.put(command.toString(), command);
@@ -35,7 +35,7 @@ public class CommandWords {
 	 *
 	 * @param commandWord
 	 *            The word to look up.
-	 * @return The CommandWord correspondng to commandWord, or UNKNOWN if it is
+	 * @return The CommandWord corresponding to commandWord, or UNKNOWN if it is
 	 *         not a valid command word.
 	 */
 	public CommandWord getCommandWord(String commandWord) {
