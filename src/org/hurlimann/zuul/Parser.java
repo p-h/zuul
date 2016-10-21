@@ -6,16 +6,16 @@ import java.util.Scanner;
 /**
  * This class is part of the "World of Zuul" application. "World of Zuul" is a
  * very simple, text based adventure game.
- * 
+ * <p>
  * This parser reads user input and tries to interpret it as an "Adventure"
  * command. Every time it is called it reads a line from the terminal and tries
  * to interpret the line as a two-word command. It returns the command as an
  * object of class Command.
- *
+ * <p>
  * The parser has a set of known command words. It checks user input against the
  * known commands, and if the input is not one of the known commands, it returns
  * a command object that is marked as an unknown command.
- * 
+ *
  * @author Michael Kölling and David J. Barnes
  * @version 2011.08.10
  */
@@ -25,9 +25,8 @@ public class Parser {
 
 	/**
 	 * Create a parser to read from the terminal window.
-	 * 
-	 * @param inputStream
-	 *            Input stream to read from. e.g. Stdin or network socket
+	 *
+	 * @param inputStream Input stream to read from. e.g. Stdin or network socket
 	 */
 	public Parser(InputStream inputStream) {
 		commands = new CommandWords();

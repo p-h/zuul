@@ -11,14 +11,14 @@ import java.net.Socket;
  * Zuul" is a very simple, text based adventure game. Users can walk around some
  * scenery. That's all. It should really be extended to make it more
  * interesting!
- * 
+ * <p>
  * To play this game, create an instance of this class and call the "play"
  * method.
- * 
+ * <p>
  * This main class creates and initialises all the others: it creates all rooms,
  * creates the parser and starts the game. It also evaluates and executes the
  * commands that the parser returns.
- * 
+ *
  * @author Michael Kölling and David J. Barnes
  * @version 2011.08.10
  */
@@ -115,9 +115,8 @@ public class Game {
 
 	/**
 	 * Given a command, process (that is: execute) the command.
-	 * 
-	 * @param command
-	 *            The command to be processed.
+	 *
+	 * @param command The command to be processed.
 	 * @return true If the command ends the game, false otherwise.
 	 */
 	private boolean processCommand(Command command) {
@@ -126,21 +125,21 @@ public class Game {
 		CommandWord commandWord = command.getCommandWord();
 
 		switch (commandWord) {
-		case UNKNOWN:
-			outStream.println("I don't know what you mean...");
-			break;
+			case UNKNOWN:
+				outStream.println("I don't know what you mean...");
+				break;
 
-		case HELP:
-			printHelp();
-			break;
+			case HELP:
+				printHelp();
+				break;
 
-		case GO:
-			goRoom(command);
-			break;
+			case GO:
+				goRoom(command);
+				break;
 
-		case QUIT:
-			wantToQuit = quit(command);
-			break;
+			case QUIT:
+				wantToQuit = quit(command);
+				break;
 		}
 		return wantToQuit;
 	}
@@ -186,7 +185,7 @@ public class Game {
 	/**
 	 * "Quit" was entered. Check the rest of the command to see whether we
 	 * really quit the game.
-	 * 
+	 *
 	 * @return true, if this command quits the game, false otherwise.
 	 */
 	private boolean quit(Command command) {

@@ -18,8 +18,7 @@ public enum CommandWord {
 	/**
 	 * Initialise with the corresponding command string.
 	 *
-	 * @param commandString
-	 *            The command string.
+	 * @param commandString The command string.
 	 */
 	CommandWord(String commandString) {
 		this.commandString = commandString;
