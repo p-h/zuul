@@ -8,7 +8,13 @@ import java.net.Socket;
 public class Player {
 	private String name;
 	private Room room;
-	private Socket Socket;
+	private Socket socket;
+
+	public Player(String  name, Room room, Socket socket) {
+		setName(name);
+		setRoom(room);
+		this.socket = socket;
+	}
 
 	public String getName() {
 		return name;
@@ -26,11 +32,7 @@ public class Player {
 		this.room = room;
 	}
 
-	public java.net.Socket getSocket() {
-		return Socket;
-	}
-
-	public void setSocket(java.net.Socket socket) {
-		Socket = socket;
+	public Socket getSocket() {
+		return socket;
 	}
 }

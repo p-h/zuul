@@ -1,5 +1,6 @@
 package org.hurlimann.zuul;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
 
@@ -20,6 +21,7 @@ import java.util.Scanner;
  * @version 2011.08.10
  */
 public class Parser {
+	private final InputStream inputStream;
 	private CommandWords commands; // holds all valid command words
 	private Scanner reader; // source of command input
 
@@ -29,32 +31,36 @@ public class Parser {
 	 * @param inputStream Input stream to read from. e.g. Stdin or network socket
 	 */
 	public Parser(InputStream inputStream) {
+		this.inputStream = inputStream;
 		commands = new CommandWords();
 		reader = new Scanner(inputStream);
 	}
 
 	/**
-	 * @return The next command from the user.
+	 * @return The next command from the user null if there is none
 	 */
-	public Command getCommand() {
+	public Command getCommand() throws IOException {
 		String inputLine; // will hold the full input line
 		String word1 = null;
 		String word2 = null;
 
-		inputLine = reader.nextLine();
+		if (inputStream.available() > 0) {
+			inputLine = reader.nextLine();
 
-		// Find up to two words on the line.
-		try (Scanner tokenizer = new Scanner(inputLine)) {
-			if (tokenizer.hasNext()) {
-				word1 = tokenizer.next(); // get first word
+			// Find up to two words on the line.
+			try (Scanner tokenizer = new Scanner(inputLine)) {
 				if (tokenizer.hasNext()) {
-					word2 = tokenizer.next(); // get second word
-					// note: we just ignore the rest of the input line.
+					word1 = tokenizer.next(); // get first word
+					if (tokenizer.hasNext()) {
+						word2 = tokenizer.next(); // get second word
+						// note: we just ignore the rest of the input line.
+					}
 				}
 			}
-		}
 
-		return new Command(commands.getCommandWord(word1), word2);
+			return new Command(commands.getCommandWord(word1), word2);
+		}
+		return null;
 	}
 
 	/**

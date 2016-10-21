@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * This class is the main class of the "World of Zuul" application. "World of
@@ -24,10 +25,8 @@ import java.net.Socket;
  */
 
 public class Game {
-	private Parser parser;
-	private Room currentRoom;
-	private PrintStream outStream;
-	private InputStream inStream;
+	private Room startingRoom;
+	private ArrayList<Player> players;
 
 	/**
 	 * Create the game and initialise its internal map.
@@ -40,15 +39,14 @@ public class Game {
 		Socket socket;
 		try (ServerSocket serverSocket = new ServerSocket(37888)) {
 			socket = serverSocket.accept();
-			outStream = new PrintStream(socket.getOutputStream());
 
-			inStream = socket.getInputStream();
+			// TODO: Implement username
+			players.add(new Player("user123", startingRoom, socket));
+
 		} catch (IOException e) {
 			System.err.println(
 					"Unable to establish network connection. Are you sure you are allowed to listen on this port?");
 		}
-
-		parser = new Parser(inStream);
 	}
 
 	/**
@@ -78,27 +76,35 @@ public class Game {
 
 		office.setExit("west", lab);
 
-		currentRoom = outside; // start game outside
+		startingRoom = outside; // start game outside
 	}
 
 	/**
 	 * Main play routine. Loops until end of play.
 	 */
-	public void play() {
+	public void play() throws IOException {
 
+		while (true) {
+			handleNewConnections();
+
+			handlePlayerInput();
+		}
+	}
+
+	private void handleNewConnections() {
 		printWelcome();
+	}
 
-		// Enter the main command loop. Here we repeatedly read commands and
-		// execute them until the game is over.
-
-		boolean finished = false;
-		while (!finished) {
+	private void handlePlayerInput() throws IOException {
+		for (Player player : players) {
+			PrintStream outStream = new PrintStream(player.getSocket().getOutputStream());
+			InputStream inStream = player.getSocket().getInputStream();
+			Parser parser = new Parser(inStream);
 			outStream.print("> ");
 
 			Command command = parser.getCommand();
-			finished = processCommand(command);
+			processCommand(command);
 		}
-		outStream.println("Thank you for playing.  Good bye.");
 	}
 
 	/**
@@ -110,7 +116,7 @@ public class Game {
 		outStream.println("World of Zuul is a new, incredibly boring adventure game.");
 		outStream.println("Type '" + CommandWord.HELP + "' if you need help.");
 		outStream.println();
-		outStream.println(currentRoom.getLongDescription());
+		outStream.println(startingRoom.getLongDescription());
 	}
 
 	/**
@@ -172,13 +178,13 @@ public class Game {
 		String direction = command.getSecondWord();
 
 		// Try to leave current room.
-		Room nextRoom = currentRoom.getExit(direction);
+		Room nextRoom = startingRoom.getExit(direction);
 
 		if (nextRoom == null) {
 			outStream.println("There is no door!");
 		} else {
-			currentRoom = nextRoom;
-			outStream.println(currentRoom.getLongDescription());
+			startingRoom = nextRoom;
+			outStream.println(startingRoom.getLongDescription());
 		}
 	}
 
