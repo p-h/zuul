@@ -1,11 +1,16 @@
 package org.hurlimann.zuul;
 
+import java.io.IOException;
+
 public class App {
 
 	public static void main(String[] args) {
 		Game myGame = new Game();
-		myGame.Initialize();
-		myGame.play();
+		try {
+			myGame.initialize();
+			myGame.play();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-
 }
