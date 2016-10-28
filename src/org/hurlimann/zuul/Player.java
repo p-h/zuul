@@ -1,9 +1,10 @@
 package org.hurlimann.zuul;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.Socket;
+import java.nio.CharBuffer;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 
 /**
  * Class representing players in the game
@@ -11,29 +12,33 @@ import java.net.Socket;
 public class Player {
 	private String name;
 	private Room room;
-	private Socket socket;
-	private Parser parser;
+	private SocketChannel socketChannel;
 
-	public Player(String  name, Room room, Socket socket) throws IOException {
+	public Player(String name, Room room, SocketChannel socketChannel) throws IOException {
 		setName(name);
 		setRoom(room);
-		this.socket = socket;
+		this.socketChannel = socketChannel;
+	}
 
-		parser = new Parser(socket.getInputStream());
+	private void writeToSocketChannel(String message) throws IOException {
+		CharsetEncoder enc = Charset.defaultCharset().newEncoder();
+		socketChannel.write(enc.encode(CharBuffer.wrap(message + "\n")));
+	}
+
+	private void writeToSocketChannel() throws IOException {
+		writeToSocketChannel("");
 	}
 
 	/**
 	 * Print out the opening message for the player.
 	 */
 	public void printWelcome() throws IOException {
-		try (PrintStream outStream = new PrintStream(socket.getOutputStream())) {
-			outStream.println();
-			outStream.println("Welcome to the World of Zuul!");
-			outStream.println("World of Zuul is a new, incredibly boring adventure game.");
-			outStream.println("Type '" + CommandWord.HELP + "' if you need help.");
-			outStream.println();
-			outStream.println(room.getLongDescription());
-		}
+		writeToSocketChannel();
+		writeToSocketChannel("Welcome to the World of Zuul!");
+		writeToSocketChannel("World of Zuul is a new, incredibly boring adventure game.");
+		writeToSocketChannel("Type '" + CommandWord.HELP + "' if you need help.");
+		writeToSocketChannel();
+		writeToSocketChannel(room.getLongDescription());
 	}
 
 	/**
@@ -44,28 +49,26 @@ public class Player {
 	 */
 	private boolean processCommand(Command command) throws IOException {
 		boolean wantToQuit;
-		try (PrintStream outStream = new PrintStream(socket.getOutputStream())) {
-			wantToQuit = false;
+		wantToQuit = false;
 
-			CommandWord commandWord = command.getCommandWord();
+		CommandWord commandWord = command.getCommandWord();
 
-			switch (commandWord) {
-				case UNKNOWN:
-					outStream.println("I don't know what you mean...");
-					break;
+		switch (commandWord) {
+			case UNKNOWN:
+				writeToSocketChannel("I don't know what you mean...");
+				break;
 
-				case HELP:
-					printHelp();
-					break;
+			case HELP:
+				printHelp();
+				break;
 
-				case GO:
-					goRoom(command);
-					break;
+			case GO:
+				goRoom(command);
+				break;
 
-				case QUIT:
-					wantToQuit = quit(command);
-					break;
-			}
+			case QUIT:
+				wantToQuit = quit(command);
+				break;
 		}
 		return wantToQuit;
 	}
@@ -75,13 +78,11 @@ public class Player {
 	 * message and a list of the command words.
 	 */
 	private void printHelp() throws IOException {
-		try (PrintStream outStream = new PrintStream(socket.getOutputStream())) {
-			outStream.println("You are lost. You are alone. You wander");
-			outStream.println("around at the university.");
-			outStream.println();
-			outStream.println("Your command words are:");
-			outStream.println(parser.getCommandsString());
-		}
+		writeToSocketChannel("You are lost. You are alone. You wander");
+		writeToSocketChannel("around at the university.");
+		writeToSocketChannel();
+		writeToSocketChannel("Your command words are:");
+		writeToSocketChannel(CommandWords.getCommandsString());
 	}
 
 	/**
@@ -89,24 +90,22 @@ public class Player {
 	 * otherwise print an error message.
 	 */
 	private void goRoom(Command command) throws IOException {
-		try (PrintStream outStream = new PrintStream(socket.getOutputStream())) {
-			if (!command.hasSecondWord()) {
-				// if there is no second word, we don't know where to go...
-				outStream.println("Go where?");
-				return;
-			}
+		if (!command.hasSecondWord()) {
+			// if there is no second word, we don't know where to go...
+			writeToSocketChannel("Go where?");
+			return;
+		}
 
-			String direction = command.getSecondWord();
+		String direction = command.getSecondWord();
 
-			// Try to leave current room.
-			Room nextRoom = room.getExit(direction);
+		// Try to leave current room.
+		Room nextRoom = room.getExit(direction);
 
-			if (nextRoom == null) {
-				outStream.println("There is no door!");
-			} else {
-				room = nextRoom;
-				outStream.println(room.getLongDescription());
-			}
+		if (nextRoom == null) {
+			writeToSocketChannel("There is no door!");
+		} else {
+			room = nextRoom;
+			writeToSocketChannel(room.getLongDescription());
 		}
 	}
 
@@ -117,24 +116,22 @@ public class Player {
 	 * @return true, if this command quits the game, false otherwise.
 	 */
 	private boolean quit(Command command) throws IOException {
-		try (PrintStream outStream = new PrintStream(socket.getOutputStream())) {
-			if (command.hasSecondWord()) {
-				outStream.println("Quit what?");
-				return false;
-			} else {
-				return true; // signal that we want to quit
-			}
+		if (command.hasSecondWord()) {
+			writeToSocketChannel("Quit what?");
+			return false;
+		} else {
+			return true; // signal that we want to quit
 		}
 	}
 
-	public void HandleInput() throws IOException {
-		PrintStream outStream = new PrintStream(getSocket().getOutputStream());
-		InputStream inStream = getSocket().getInputStream();
-		Parser parser = new Parser(inStream);
-		outStream.print("> ");
+	public void handleInput(final String input) throws IOException {
+		Parser parser = new Parser(input);
+		writeToSocketChannel("> ");
 
 		Command command = parser.getCommand();
-		processCommand(command);
+		if (command != null) {
+			processCommand(command);
+		}
 	}
 
 	public String getName() {
@@ -151,9 +148,5 @@ public class Player {
 
 	public void setRoom(Room room) {
 		this.room = room;
-	}
-
-	public Socket getSocket() {
-		return socket;
 	}
 }

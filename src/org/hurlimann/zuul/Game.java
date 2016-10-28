@@ -1,12 +1,13 @@
 package org.hurlimann.zuul;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * This class is the main class of the "World of Zuul" application. "World of
@@ -23,8 +24,9 @@ import java.util.ArrayList;
 
 public class Game {
 	private static Room startingRoom;
-	private ArrayList<Player> players;
+	private HashMap<SocketChannel, Player> playerMap;
 	private ServerSocketChannel serverSocketChannel;
+	private Selector selector;
 
 	/**
 	 * Create the game and initialise its internal map.
@@ -34,11 +36,14 @@ public class Game {
 	}
 
 	public void initialize() throws IOException {
-		players = new ArrayList<>();
+		playerMap = new HashMap<>();
 
 		serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);
-		serverSocketChannel.socket().bind(new InetSocketAddress(InetAddress.getLocalHost(), 37888));
+		serverSocketChannel.bind(new InetSocketAddress("localhost", 7331));
+
+		selector = Selector.open();
+		serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 	}
 
 	/**
@@ -74,28 +79,47 @@ public class Game {
 	/**
 	 * Main play routine. Loops until end of play.
 	 */
-	public void play() throws IOException {
+	public void play() throws IOException, InterruptedException {
 
 		while (true) {
-			handleNewConnections();
+			selector.selectNow();
+			for (SelectionKey selectionKey : selector.selectedKeys()) {
+				if (selectionKey.isAcceptable()) {
+					ServerSocketChannel serverSocketChannel = (ServerSocketChannel) selectionKey.channel();
+					SocketChannel socketChannel = serverSocketChannel.accept();
+
+					socketChannel.configureBlocking(false);
+					socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+
+					// TODO: Implement username
+					final Player newPlayer = new Player("user123", startingRoom, socketChannel);
+					playerMap.put(socketChannel, newPlayer);
+
+					newPlayer.printWelcome();
+				} else if (selectionKey.isReadable()) {
+					SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
+					ByteBuffer buffer = ByteBuffer.allocate(1024);
+					int numRead = socketChannel.read(buffer);
+					if (numRead == -1) {
+						playerMap.remove(socketChannel);
+						socketChannel.close();
+						selectionKey.cancel();
+					}
 
 
-			for (Player player : players) {
-				player.HandleInput();
+					Player player = playerMap.get(socketChannel);
+
+					byte[] data = new byte[numRead];
+					System.arraycopy(buffer.array(), 0, data, 0, numRead);
+					String input = new String(data);
+
+					player.handleInput(input);
+				}
 			}
-		}
-	}
 
-	private void handleNewConnections() throws IOException {
-		SocketChannel newPlayerSocketChannel;
-		while ((newPlayerSocketChannel = serverSocketChannel.accept()) != null) {
+			selector.selectedKeys().clear();
 
-			final Socket newPlayerSocket = newPlayerSocketChannel.socket();
-			// TODO: Implement username
-			final Player newPlayer = new Player("user123", startingRoom, newPlayerSocket);
-			players.add(newPlayer);
-
-			newPlayer.printWelcome();
+			Thread.sleep(500L);
 		}
 	}
 }

@@ -16,12 +16,12 @@ import java.util.HashMap;
 public class CommandWords {
 	// A mapping between a command word and the CommandWord
 	// associated with it.
-	private HashMap<String, CommandWord> validCommands;
+	private static HashMap<String, CommandWord> validCommands;
 
-	/**
-	 * Constructor - initialise the command words.
-	 */
-	public CommandWords() {
+	private CommandWords() {
+	}
+
+	static {
 		validCommands = new HashMap<>();
 		for (CommandWord command : CommandWord.values()) {
 			if (command != CommandWord.UNKNOWN) {
@@ -37,7 +37,7 @@ public class CommandWords {
 	 * @return The CommandWord corresponding to commandWord, or UNKNOWN if it is
 	 * not a valid command word.
 	 */
-	public CommandWord getCommandWord(String commandWord) {
+	public static CommandWord getCommandWord(String commandWord) {
 		CommandWord command = validCommands.get(commandWord);
 		if (command != null) {
 			return command;
@@ -51,14 +51,14 @@ public class CommandWords {
 	 *
 	 * @return true if it is, false if it isn't.
 	 */
-	public boolean isCommand(String aString) {
+	public static boolean isCommand(String aString) {
 		return validCommands.containsKey(aString);
 	}
 
 	/**
 	 * @return all valid commands as a space separated string.
 	 */
-	public String getCommandsString() {
+	public static String getCommandsString() {
 		return validCommands.keySet().stream().reduce("", (head, tail) -> head + " " + tail).trim();
 	}
 }

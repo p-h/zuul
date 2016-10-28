@@ -1,7 +1,5 @@
 package org.hurlimann.zuul;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Scanner;
 
 /**
@@ -21,52 +19,37 @@ import java.util.Scanner;
  * @version 2011.08.10
  */
 public class Parser {
-	private final InputStream inputStream;
+	private final String input;
 	private CommandWords commands; // holds all valid command words
 	private Scanner reader; // source of command input
 
 	/**
 	 * Create a parser to read from the terminal window.
 	 *
-	 * @param inputStream Input stream to read from. e.g. Stdin or network socket
+	 * @param input the string that the user entered
 	 */
-	public Parser(InputStream inputStream) {
-		this.inputStream = inputStream;
-		commands = new CommandWords();
-		reader = new Scanner(inputStream);
+	public Parser(String input) {
+		this.input = input;
 	}
 
 	/**
 	 * @return The next command from the user null if there is none
 	 */
-	public Command getCommand() throws IOException {
-		String inputLine; // will hold the full input line
+	public Command getCommand() {
 		String word1 = null;
 		String word2 = null;
 
-		if (inputStream.available() > 0) {
-			inputLine = reader.nextLine();
-
-			// Find up to two words on the line.
-			try (Scanner tokenizer = new Scanner(inputLine)) {
+		// Find up to two words on the line.
+		try (Scanner tokenizer = new Scanner(input)) {
+			if (tokenizer.hasNext()) {
+				word1 = tokenizer.next(); // get first word
 				if (tokenizer.hasNext()) {
-					word1 = tokenizer.next(); // get first word
-					if (tokenizer.hasNext()) {
-						word2 = tokenizer.next(); // get second word
-						// note: we just ignore the rest of the input line.
-					}
+					word2 = tokenizer.next(); // get second word
+					// note: we just ignore the rest of the input line.
 				}
 			}
-
-			return new Command(commands.getCommandWord(word1), word2);
 		}
-		return null;
-	}
 
-	/**
-	 * Print out a list of valid command words.
-	 */
-	public String getCommandsString() {
-		return commands.getCommandsString();
+		return new Command(CommandWords.getCommandWord(word1), word2);
 	}
 }

@@ -9,7 +9,7 @@ public class App {
 		try {
 			myGame.initialize();
 			myGame.play();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
