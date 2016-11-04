@@ -113,7 +113,11 @@ public class Game {
 					System.arraycopy(buffer.array(), 0, data, 0, numRead);
 					String input = new String(data);
 
-					player.handleInput(input);
+					boolean wantToQuit = player.handleInput(input);
+					if (wantToQuit) {
+						socketChannel.close();
+						playerMap.remove(socketChannel);
+					}
 				}
 			}
 

@@ -124,14 +124,12 @@ public class Player {
 		}
 	}
 
-	public void handleInput(final String input) throws IOException {
+	public boolean handleInput(final String input) throws IOException {
 		Parser parser = new Parser(input);
 		writeToSocketChannel("> ");
 
 		Command command = parser.getCommand();
-		if (command != null) {
-			processCommand(command);
-		}
+		return processCommand(command);
 	}
 
 	public String getName() {
