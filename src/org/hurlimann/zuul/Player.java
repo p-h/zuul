@@ -126,8 +126,6 @@ public class Player {
 
 	public boolean handleInput(final String input) throws IOException {
 		Parser parser = new Parser(input);
-		writeToSocketChannel("> ");
-
 		Command command = parser.getCommand();
 		return processCommand(command);
 	}
