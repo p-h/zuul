@@ -1,7 +1,8 @@
 package org.hurlimann.zuul;
 
 import java.util.HashMap;
-import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class Room - a room in an adventure game.
@@ -19,7 +20,7 @@ import java.util.Set;
 
 public class Room {
 	private String description;
-	private HashMap<String, Room> exits; // stores exits of this room.
+	private HashMap<Direction, Room> exits;
 
 	/**
 	 * Create a room described "description". Initially, it has no exits.
@@ -38,7 +39,7 @@ public class Room {
 	 * @param direction The direction of the exit.
 	 * @param neighbor  The room to which the exit leads.
 	 */
-	public void setExit(String direction, Room neighbor) {
+	public void setExit(Direction direction, Room neighbor) {
 		exits.put(direction, neighbor);
 	}
 
@@ -67,12 +68,10 @@ public class Room {
 	 * @return Details of the room's exits.
 	 */
 	private String getExitString() {
-		String returnString = "Exits:";
-		Set<String> keys = exits.keySet();
-		for (String exit : keys) {
-			returnString += " " + exit;
-		}
-		return returnString;
+		Stream<String> exitStrings = exits.keySet().stream()
+				.map(Direction::toString);
+		return Stream.concat(Stream.of("Exits:"), exitStrings)
+				.collect(Collectors.joining(" "));
 	}
 
 	/**
@@ -82,7 +81,7 @@ public class Room {
 	 * @param direction The exit's direction.
 	 * @return The room in the given direction.
 	 */
-	public Room getExit(String direction) {
+	public Room getExit(Direction direction) {
 		return exits.get(direction);
 	}
 }

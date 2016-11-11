@@ -1,7 +1,5 @@
 package org.hurlimann.zuul;
 
-import java.io.IOException;
-
 public class App {
 
 	public static void main(String[] args) {

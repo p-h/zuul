@@ -60,18 +60,18 @@ public class Game {
 		office = new Room("in the computing admin office");
 
 		// initialise room exits
-		outside.setExit("east", theater);
-		outside.setExit("south", lab);
-		outside.setExit("west", pub);
+		outside.setExit(Direction.EAST, theater);
+		outside.setExit(Direction.SOUTH, lab);
+		outside.setExit(Direction.WEST, pub);
 
-		theater.setExit("west", outside);
+		theater.setExit(Direction.WEST, outside);
 
-		pub.setExit("east", outside);
+		pub.setExit(Direction.EAST, outside);
 
-		lab.setExit("north", outside);
-		lab.setExit("east", office);
+		lab.setExit(Direction.NORTH, outside);
+		lab.setExit(Direction.EAST, office);
 
-		office.setExit("west", lab);
+		office.setExit(Direction.WEST, lab);
 
 		startingRoom = outside; // start game outside
 	}
