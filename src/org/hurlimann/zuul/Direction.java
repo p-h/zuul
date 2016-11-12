@@ -13,7 +13,7 @@ public enum Direction {
 		DirectionLookup.lookup.put(name, this);
 	}
 
-	public static Direction FindDirection(String name) {
+	public static Direction findDirection(String name) {
 		return DirectionLookup.lookup.get(name);
 	}
 

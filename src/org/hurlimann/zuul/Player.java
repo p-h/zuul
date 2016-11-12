@@ -96,7 +96,7 @@ public class Player {
 			return;
 		}
 
-		Direction direction = Direction.f(command.getSecondWord());
+		Direction direction = Direction.findDirection(command.getSecondWord());
 
 		// Try to leave current room.
 		Room nextRoom = room.getExit(direction);
