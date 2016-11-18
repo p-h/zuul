@@ -68,9 +68,7 @@ public class Room {
 	 * @return Details of the room's exits.
 	 */
 	private String getExitString() {
-		Stream<String> exitStrings = exits.keySet().stream()
-				.map(Direction::toString);
-		return Stream.concat(Stream.of("Exits:"), exitStrings)
+		return Stream.concat(Stream.of("Exits:"), exits.keySet().stream().map(Direction::toString))
 				.collect(Collectors.joining(" "));
 	}
 
