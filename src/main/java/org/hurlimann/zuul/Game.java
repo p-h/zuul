@@ -8,6 +8,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This class is the main class of the "World of Zuul" application. "World of
@@ -91,8 +92,9 @@ public class Game {
 					socketChannel.configureBlocking(false);
 					socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 
-					// TODO: Implement username
-					final Player newPlayer = new Player("user123", startingRoom, socketChannel);
+					long newUserId = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+					final Player newPlayer = new Player("player" + newUserId,
+							startingRoom, socketChannel);
 					playerMap.put(socketChannel, newPlayer);
 
 					newPlayer.printWelcome();

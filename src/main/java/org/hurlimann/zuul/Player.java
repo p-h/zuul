@@ -69,6 +69,9 @@ public class Player {
 			case QUIT:
 				wantToQuit = quit(command);
 				break;
+			case SETNAME:
+				setName(command.getSecondWord());
+				break;
 		}
 		return wantToQuit;
 	}
