@@ -102,23 +102,22 @@ public class Game {
 					SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
 					ByteBuffer buffer = ByteBuffer.allocate(1024);
 					int numRead = socketChannel.read(buffer);
-					if (numRead == -1) {
+					if (numRead > -1) {
+						Player player = playerMap.get(socketChannel);
+
+						byte[] data = new byte[numRead];
+						System.arraycopy(buffer.array(), 0, data, 0, numRead);
+						String input = new String(data);
+
+						boolean wantToQuit = player.handleInput(input);
+						if (wantToQuit) {
+							socketChannel.close();
+							playerMap.remove(socketChannel);
+						}
+					} else {
 						playerMap.remove(socketChannel);
 						socketChannel.close();
 						selectionKey.cancel();
-					}
-
-
-					Player player = playerMap.get(socketChannel);
-
-					byte[] data = new byte[numRead];
-					System.arraycopy(buffer.array(), 0, data, 0, numRead);
-					String input = new String(data);
-
-					boolean wantToQuit = player.handleInput(input);
-					if (wantToQuit) {
-						socketChannel.close();
-						playerMap.remove(socketChannel);
 					}
 				}
 			}
