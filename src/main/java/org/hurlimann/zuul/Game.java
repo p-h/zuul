@@ -24,7 +24,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 
 public class Game {
-	private static Room startingRoom;
+	private Room startingRoom;
 	private HashMap<SocketChannel, Player> playerMap;
 	private ServerSocketChannel serverSocketChannel;
 	private Selector selector;
