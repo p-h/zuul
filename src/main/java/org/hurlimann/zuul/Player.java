@@ -5,14 +5,22 @@ import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.List;
+import java.util.function.ToIntFunction;
 
 /**
  * Class representing players in the game
  */
-public class Player {
+public class Player implements HasStats {
 	private String name;
 	private Room room;
 	private SocketChannel socketChannel;
+
+	private List<Item> items;
+
+	private int baseAttack;
+	private int baseDefense;
+	private int baseAgility;
 
 	public Player(String name, Room room, SocketChannel socketChannel) throws IOException {
 		setName(name);
@@ -149,5 +157,40 @@ public class Player {
 
 	public void setRoom(Room room) {
 		this.room = room;
+	}
+
+	/**
+	 *
+	 * @param getter stat of the Player and item that needs to be calculated
+	 * @return calculated stat
+	 */
+	private int getStat(ToIntFunction<HasStats> getter) {
+		return items.stream()
+				.mapToInt(getter)
+				.reduce(getter.applyAsInt(this), (acc, x) -> acc + x);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int getAttack() {
+		return getStat(HasStats::getAttack);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int getDefense() {
+		return getStat(HasStats::getDefense);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int getAgility() {
+		return getStat(HasStats::getAgility);
 	}
 }
