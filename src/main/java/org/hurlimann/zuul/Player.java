@@ -14,7 +14,7 @@ import java.util.function.ToIntFunction;
 public class Player implements HasStats {
 	private String name;
 	private Room room;
-	private SocketChannel socketChannel;
+	private final SocketChannel socketChannel;
 
 	private List<Item> items;
 
@@ -22,9 +22,9 @@ public class Player implements HasStats {
 	private int baseDefense;
 	private int baseAgility;
 
-	public Player(String name, Room room, SocketChannel socketChannel) throws IOException {
-		setName(name);
-		setRoom(room);
+	public Player(String name, Room room, SocketChannel socketChannel) {
+		this.name = name;
+		this.room = room;
 		this.socketChannel = socketChannel;
 	}
 
@@ -78,9 +78,9 @@ public class Player implements HasStats {
 				wantToQuit = quit(command);
 				break;
 			case SETNAME:
-				String name = command.getSecondWord();
-				setName(name);
-				writeToSocketChannel("Hi " + name + "!");
+				String newName = command.getSecondWord();
+				this.name = newName;
+				writeToSocketChannel("Hi " + newName + "!");
 				break;
 		}
 		return wantToQuit;
@@ -147,16 +147,8 @@ public class Player implements HasStats {
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public Room getRoom() {
 		return room;
-	}
-
-	public void setRoom(Room room) {
-		this.room = room;
 	}
 
 	/**

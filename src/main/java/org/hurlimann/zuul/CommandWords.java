@@ -13,10 +13,10 @@ import java.util.HashMap;
  * @version 2011.08.10
  */
 
-public class CommandWords {
+class CommandWords {
 	// A mapping between a command word and the CommandWord
 	// associated with it.
-	private static HashMap<String, CommandWord> validCommands;
+	private static final HashMap<String, CommandWord> validCommands;
 
 	private CommandWords() {
 	}

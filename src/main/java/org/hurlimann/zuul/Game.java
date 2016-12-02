@@ -23,10 +23,9 @@ import java.util.concurrent.ThreadLocalRandom;
  * @version 2016.10.27
  */
 
-public class Game {
+class Game {
 	private Room startingRoom;
 	private HashMap<SocketChannel, Player> playerMap;
-	private ServerSocketChannel serverSocketChannel;
 	private Selector selector;
 
 	/**
@@ -39,7 +38,7 @@ public class Game {
 	public void initialize() throws IOException {
 		playerMap = new HashMap<>();
 
-		serverSocketChannel = ServerSocketChannel.open();
+		final ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);
 		serverSocketChannel.bind(new InetSocketAddress("localhost", 7331));
 
@@ -82,6 +81,7 @@ public class Game {
 	 */
 	public void play() throws IOException, InterruptedException {
 
+		//noinspection InfiniteLoopStatement
 		while (true) {
 			selector.selectNow();
 			for (SelectionKey selectionKey : selector.selectedKeys()) {

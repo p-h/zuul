@@ -13,7 +13,7 @@ public enum CommandWord {
 	GO("go"), QUIT("quit"), HELP("help"), SETNAME("setname"), UNKNOWN("?");
 
 	// The command string.
-	private String commandString;
+	private final String commandString;
 
 	/**
 	 * Initialise with the corresponding command string.

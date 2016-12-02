@@ -19,8 +19,8 @@ import java.util.stream.Stream;
  */
 
 public class Room {
-	private String description;
-	private HashMap<Direction, Room> exits;
+	private final String description;
+	private final HashMap<Direction, Room> exits;
 
 	/**
 	 * Create a room described "description". Initially, it has no exits.

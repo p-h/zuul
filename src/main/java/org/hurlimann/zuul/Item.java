@@ -5,10 +5,10 @@ package org.hurlimann.zuul;
  * An Item makes a Player stronger
  */
 public class Item implements HasStats {
-	private String name;
-	private int attack;
-	private int defense;
-	private int agility;
+	private final String name;
+	private final int attack;
+	private final int defense;
+	private final int agility;
 
 	public Item(String name, int attack, int defense, int agility) {
 		this.name = name;
