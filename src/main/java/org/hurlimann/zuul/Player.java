@@ -70,7 +70,9 @@ public class Player {
 				wantToQuit = quit(command);
 				break;
 			case SETNAME:
-				setName(command.getSecondWord());
+				String name = command.getSecondWord();
+				setName(name);
+				writeToSocketChannel("Hi " + name + "!");
 				break;
 		}
 		return wantToQuit;
