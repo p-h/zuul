@@ -1,6 +1,6 @@
 package org.hurlimann.zuul;
 
-import java.util.HashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 public class Room {
 	private final String description;
-	private final HashMap<Direction, Room> exits;
+	private final Map<Direction, Room> exits;
 
 	/**
 	 * Create a room described "description". Initially, it has no exits.

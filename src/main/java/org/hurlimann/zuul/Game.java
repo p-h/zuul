@@ -9,6 +9,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -26,7 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 class Game {
 	private Room startingRoom;
-	private HashMap<SocketChannel, Player> playerMap;
+	private Map<SocketChannel, Player> playerMap;
 	private Selector selector;
 
 	/**

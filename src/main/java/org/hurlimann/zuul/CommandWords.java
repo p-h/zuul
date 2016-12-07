@@ -1,6 +1,7 @@
 package org.hurlimann.zuul;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class is part of the "World of Zuul" application. "World of Zuul" is a
@@ -16,7 +17,7 @@ import java.util.HashMap;
 class CommandWords {
 	// A mapping between a command word and the CommandWord
 	// associated with it.
-	private static final HashMap<String, CommandWord> validCommands;
+	private static final Map<String, CommandWord> validCommands;
 
 	private CommandWords() {
 	}
