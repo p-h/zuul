@@ -15,3 +15,6 @@ hs_err_pid*
 doc/logfile.txt
 *.ctxt
 /bin/
+
+.idea/
+target/
