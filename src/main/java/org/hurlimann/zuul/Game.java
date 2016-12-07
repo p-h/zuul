@@ -1,6 +1,7 @@
 package org.hurlimann.zuul;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -40,7 +41,7 @@ class Game {
 
 		final ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);
-		serverSocketChannel.bind(new InetSocketAddress("localhost", 7331));
+		serverSocketChannel.bind(new InetSocketAddress(InetAddress.getLocalHost(), 7331));
 
 		selector = Selector.open();
 		serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
