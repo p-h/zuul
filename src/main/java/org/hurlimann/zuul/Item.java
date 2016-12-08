@@ -21,7 +21,6 @@ public class Item implements HasStats {
 		return name;
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -44,5 +43,34 @@ public class Item implements HasStats {
 	@Override
 	public int getAgility() {
 		return agility;
+	}
+
+	@Override
+	public String toString() {
+		return String.format(
+				"Item{name='%s', attack='%d', defense='%d', agility='%d'}",
+				name, attack, defense, agility);
+	}
+
+	@Override
+	public boolean equals(final Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		final Item item = (Item) o;
+
+		if (getAttack() != item.getAttack()) return false;
+		if (getDefense() != item.getDefense()) return false;
+		if (getAgility() != item.getAgility()) return false;
+		return getName().equals(item.getName());
+	}
+
+	@Override
+	public int hashCode() {
+		int result = getName().hashCode();
+		result = 31 * result + getAttack();
+		result = 31 * result + getDefense();
+		result = 31 * result + getAgility();
+		return result;
 	}
 }
