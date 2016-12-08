@@ -10,7 +10,12 @@ package org.hurlimann.zuul;
 public enum CommandWord {
 	// A value for each command word along with its
 	// corresponding user interface string.
-	GO("go"), QUIT("quit"), HELP("help"), SETNAME("setname"), UNKNOWN("?");
+	GO("go"),
+	QUIT("quit"),
+	HELP("help"),
+	SETNAME("setname"),
+	LOOK("look"),
+	UNKNOWN("?");
 
 	// The command string.
 	private final String commandString;

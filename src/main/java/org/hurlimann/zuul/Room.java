@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 public class Room {
 	private final String description;
 	private final Map<Direction, Room> exits;
+	private List<Item> items;
 
 	/**
 	 * Create a room described "description". Initially, it has no exits.
@@ -31,6 +32,7 @@ public class Room {
 	public Room(String description) {
 		this.description = description;
 		exits = new HashMap<>();
+		items = new ArrayList<>();
 	}
 
 	/**
@@ -68,7 +70,8 @@ public class Room {
 	 * @return Details of the room's exits.
 	 */
 	private String getExitString() {
-		return Stream.concat(Stream.of("Exits:"), exits.keySet().stream().map(Direction::toString))
+		return Stream.concat(Stream.of("Exits:"), exits.keySet().stream()
+				.map(Direction::toString))
 				.collect(Collectors.joining(" "));
 	}
 
@@ -81,5 +84,9 @@ public class Room {
 	 */
 	public Room getExit(Direction direction) {
 		return exits.get(direction);
+	}
+
+	public List<Item> getContents() {
+		return Collections.unmodifiableList(items);
 	}
 }

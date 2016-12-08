@@ -82,8 +82,22 @@ public class Player implements HasStats {
 				this.name = newName;
 				writeToSocketChannel("Hi " + newName + "!");
 				break;
+			case LOOK:
+				printRoomContents();
+				break;
 		}
 		return wantToQuit;
+	}
+
+	/**
+	 * Print out what items and players are in the room
+	 */
+	private void printRoomContents() throws IOException {
+		writeToSocketChannel("these are the contents of the room");
+		List<Item> contents = room.getContents();
+		for (Item item : contents) {
+			writeToSocketChannel(item.toString());
+		}
 	}
 
 	/**
