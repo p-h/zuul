@@ -85,6 +85,8 @@ class Game {
 
 		//noinspection InfiniteLoopStatement
 		while (true) {
+			Room.triggerPotentialSpawns();
+
 			selector.selectNow();
 			for (SelectionKey selectionKey : selector.selectedKeys()) {
 				if (selectionKey.isAcceptable()) {

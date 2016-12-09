@@ -1,6 +1,7 @@
 package org.hurlimann.zuul;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,6 +20,17 @@ import java.util.stream.Stream;
  */
 
 public class Room {
+	/**
+	 * Item spawn chance in tenths of a percent
+	 */
+	private static final int ITEM_SPAWN_CHANCE = 5;
+
+	private static List<Room> allRooms = new ArrayList<>();
+
+	static void triggerPotentialSpawns() {
+		allRooms.forEach(Room::spawnItemIfNescessary);
+	}
+
 	private final String description;
 	private final Map<Direction, Room> exits;
 	private List<Item> items;
@@ -33,6 +45,8 @@ public class Room {
 		this.description = description;
 		exits = new HashMap<>();
 		items = new ArrayList<>();
+
+		allRooms.add(this);
 	}
 
 	/**
@@ -88,5 +102,12 @@ public class Room {
 
 	public List<Item> getContents() {
 		return Collections.unmodifiableList(items);
+	}
+
+	void spawnItemIfNescessary() {
+		int random = ThreadLocalRandom.current().nextInt(0, 1000);
+		if (random < ITEM_SPAWN_CHANCE) {
+			this.items.add(RandomItemGenerator.generate());
+		}
 	}
 }

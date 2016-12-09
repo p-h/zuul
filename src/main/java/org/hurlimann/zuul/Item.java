@@ -5,16 +5,22 @@ package org.hurlimann.zuul;
  * An Item makes a Player stronger
  */
 public class Item implements HasStats {
+	private final int id;
 	private final String name;
 	private final int attack;
 	private final int defense;
 	private final int agility;
 
-	public Item(String name, int attack, int defense, int agility) {
+	public Item(int id, String name, int attack, int defense, int agility) {
+		this.id = id;
 		this.name = name;
 		this.attack = attack;
 		this.defense = defense;
 		this.agility = agility;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	public String getName() {
@@ -48,8 +54,8 @@ public class Item implements HasStats {
 	@Override
 	public String toString() {
 		return String.format(
-				"Item{name='%s', attack='%d', defense='%d', agility='%d'}",
-				name, attack, defense, agility);
+				"Item{id='%d', name='%s', attack='%d', defense='%d', agility='%d'}",
+				id, name, attack, defense, agility);
 	}
 
 	@Override
@@ -62,6 +68,7 @@ public class Item implements HasStats {
 		if (getAttack() != item.getAttack()) return false;
 		if (getDefense() != item.getDefense()) return false;
 		if (getAgility() != item.getAgility()) return false;
+		if (getId() != item.getId()) return false;
 		return getName().equals(item.getName());
 	}
 
@@ -71,6 +78,7 @@ public class Item implements HasStats {
 		result = 31 * result + getAttack();
 		result = 31 * result + getDefense();
 		result = 31 * result + getAgility();
+		result = 31 * result + getId();
 		return result;
 	}
 }
