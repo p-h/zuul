@@ -26,9 +26,17 @@ public class Room {
 	private static final int ITEM_SPAWN_CHANCE = 5;
 
 	private static List<Room> allRooms = new ArrayList<>();
+	private static final long MAX_ITEM_COUNT = 15;
 
 	static void triggerPotentialSpawns() {
-		allRooms.forEach(Room::spawnItemIfNescessary);
+		long itemsCount = allRooms
+				.stream()
+				.flatMap(r -> r.getItems().stream())
+				.count();
+
+		if (itemsCount < MAX_ITEM_COUNT) {
+			allRooms.forEach(Room::spawnItemIfNescessary);
+		}
 	}
 
 	private final String description;
@@ -100,7 +108,12 @@ public class Room {
 		return exits.get(direction);
 	}
 
-	public List<Item> getContents() {
+	/**
+	 * Exposes the room's items through a non modifiable list
+	 *
+	 * @return unmodifiable list of items
+	 */
+	public List<Item> getItems() {
 		return Collections.unmodifiableList(items);
 	}
 
