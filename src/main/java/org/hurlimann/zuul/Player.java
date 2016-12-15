@@ -137,13 +137,15 @@ public class Player implements HasStats {
 		if (otherPlayerName == null || otherPlayerName.isEmpty()) {
 			writeToSocketChannel("Attack who?");
 		} else {
-			Optional<Player> playerToAttack = room.getPlayers()
+			Optional<Player> optionalPlayerToAttack = room.getPlayers()
 					.stream()
 					.filter(p -> p.getName().equals(otherPlayerName))
 					.findFirst();
-			if (playerToAttack.isPresent()) {
-				room.addCombat(new Combat(this, playerToAttack.get()));
+			if (optionalPlayerToAttack.isPresent()) {
+				Player playerToAttack = optionalPlayerToAttack.get();
+				room.addCombat(new Combat(this, playerToAttack));
 				writeToSocketChannel("Successfully attacked " + otherPlayerName + "!");
+				playerToAttack.tell("You've been attacked by " + this.getName());
 			} else {
 				writeToSocketChannel("Specified player doesn't exist.");
 			}
