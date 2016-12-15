@@ -101,11 +101,16 @@ public class Room {
 	}
 
 	void updateRoom() {
-		players.removeIf(Player::isToDelete);
-		spawnItemsIfNescessary();
+		handlePlayersToRemove();
+		spawnItemsIfNecessary();
 	}
 
-	private void spawnItemsIfNescessary() {
+	private void handlePlayersToRemove() {
+		players.removeIf(Player::isToDelete);
+		combats.removeIf(c -> c.getPlayer1().isToDelete() || c.getPlayer2().isToDelete());
+	}
+
+	private void spawnItemsIfNecessary() {
 		int random = ThreadLocalRandom.current().nextInt(0, 1000);
 		if (random < ITEM_SPAWN_CHANCE) {
 			this.items.add(RandomItemGenerator.generate());

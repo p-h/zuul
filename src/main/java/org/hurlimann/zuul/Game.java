@@ -39,7 +39,7 @@ class Game {
 	 * Create the game and initialise its internal map.
 	 */
 	public Game() {
-		Room outside, theater, pub, lab, office;
+		Room outside, theater, pub, lab, office, cafeteria;
 
 		// create the rooms
 		outside = new Room("outside the main entrance of the university");
@@ -47,6 +47,7 @@ class Game {
 		pub = new Room("in the campus pub");
 		lab = new Room("in a computing lab");
 		office = new Room("in the computing admin office");
+		cafeteria = new Room("in the cafeteria. There's lots of delicious food.");
 
 		outside.setExit(Direction.EAST, theater);
 		outside.setExit(Direction.SOUTH, lab);
@@ -55,6 +56,9 @@ class Game {
 		theater.setExit(Direction.WEST, outside);
 
 		pub.setExit(Direction.EAST, outside);
+		pub.setExit(Direction.WEST, cafeteria);
+
+		cafeteria.setExit(Direction.EAST, pub);
 
 		lab.setExit(Direction.NORTH, outside);
 		lab.setExit(Direction.EAST, office);
@@ -70,6 +74,7 @@ class Game {
 		rooms.add(pub);
 		rooms.add(lab);
 		rooms.add(office);
+		rooms.add(cafeteria);
 
 		this.rooms = Collections.unmodifiableList(rooms);
 	}
