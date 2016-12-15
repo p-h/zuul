@@ -20,28 +20,13 @@ import java.util.stream.Stream;
  */
 
 public class Room {
-	/**
-	 * Item spawn chance in tenths of a percent
-	 */
 	private static final int ITEM_SPAWN_CHANCE = 5;
-
-	private static List<Room> allRooms = new ArrayList<>();
-	private static final long MAX_ITEM_COUNT = 15;
-
-	static void triggerPotentialSpawns() {
-		long itemsCount = allRooms
-				.stream()
-				.flatMap(r -> r.getItems().stream())
-				.count();
-
-		if (itemsCount < MAX_ITEM_COUNT) {
-			allRooms.forEach(Room::spawnItemIfNecessary);
-		}
-	}
 
 	private final String description;
 	private final Map<Direction, Room> exits;
 	private List<Item> items;
+	private List<Player> players = new ArrayList<>();
+	private List<Combat> combats = new ArrayList<>();
 
 	/**
 	 * Create a room described "description". Initially, it has no exits.
@@ -53,8 +38,6 @@ public class Room {
 		this.description = description;
 		exits = new HashMap<>();
 		items = new ArrayList<>();
-
-		allRooms.add(this);
 	}
 
 	/**
@@ -121,6 +104,50 @@ public class Room {
 		int random = ThreadLocalRandom.current().nextInt(0, 1000);
 		if (random < ITEM_SPAWN_CHANCE) {
 			this.items.add(RandomItemGenerator.generate());
+		}
+	}
+
+	/**
+	 * @return an unmodifiable list of players in this room
+	 */
+	public List<Player> getPlayers() {
+		return Collections.unmodifiableList(players);
+	}
+
+
+	public void addCombat(Combat combat) {
+		combats.add(combat);
+	}
+
+	public List<Player> getPlayersInCombat() {
+		return Collections.unmodifiableList(
+				combats.stream()
+						.flatMap(c -> Stream.of(c.getPlayers()))
+						.distinct()
+						.collect(Collectors.toList()));
+	}
+
+	public void removePlayer(Player player) {
+		players.remove(player);
+	}
+
+	public void addPlayer(Player player) {
+		players.add(player);
+	}
+
+	public Optional<Player> getCombatingPlayer(Player player) {
+		Optional<Player> ifIsPlayer1 =
+				combats.stream()
+						.filter(c -> c.getPlayer1().equals(player))
+						.map(c -> c.getPlayer2())
+						.findFirst();
+		if (ifIsPlayer1.isPresent()) {
+			return ifIsPlayer1;
+		} else {
+			return combats.stream()
+					.filter(c -> c.getPlayer2().equals(player))
+					.map(c -> c.getPlayer1())
+					.findFirst();
 		}
 	}
 }

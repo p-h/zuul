@@ -5,7 +5,9 @@ import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.ToIntFunction;
 
 /**
@@ -16,8 +18,9 @@ public class Player implements HasStats {
 	private Room room;
 	private final SocketChannel socketChannel;
 
-	private List<Item> items;
+	private List<Item> items = new ArrayList<>();
 
+	private int hitPoints;
 	private int baseAttack;
 	private int baseDefense;
 	private int baseAgility;
@@ -71,7 +74,11 @@ public class Player implements HasStats {
 				break;
 
 			case GO:
-				goRoom(command);
+				if (isInCombat()) {
+					writeToSocketChannel("You can't leave. You're in combat.");
+				} else {
+					goRoom(command);
+				}
 				break;
 
 			case QUIT:
@@ -90,8 +97,48 @@ public class Player implements HasStats {
 			case LOOK:
 				printRoomContents();
 				break;
+			case ATTACK:
+				handleAttack(command);
+				break;
 		}
 		return wantToQuit;
+	}
+
+	private void handleAttack(Command command) throws IOException {
+		if (isInCombat()) {
+			Optional<Player> otherPlayerOptional = room.getCombatingPlayer(this);
+			if (otherPlayerOptional.isPresent()) {
+				Player otherPlayer = otherPlayerOptional.get();
+				otherPlayer.takeHit(this.getEffectiveAttack());
+				int otherPlayerHP = otherPlayer.getHitPoints();
+				writeToSocketChannel("Hit " + otherPlayer.getName() + ".\n" +
+						otherPlayerHP + " HP remaining!");
+			}
+		} else {
+			initiateCombat(command);
+		}
+	}
+
+	private void initiateCombat(Command command) throws IOException {
+		String otherPlayerName = command.getSecondWord();
+		if (otherPlayerName == null || otherPlayerName.isEmpty()) {
+			writeToSocketChannel("Attack who?");
+		} else {
+			Optional<Player> playerToAttack = room.getPlayers()
+					.stream()
+					.filter(p -> p.getName().equals(otherPlayerName))
+					.findFirst();
+			if (playerToAttack.isPresent()) {
+				room.addCombat(new Combat(this, playerToAttack.get()));
+				writeToSocketChannel("Successfully attacked " + otherPlayerName + "!");
+			} else {
+				writeToSocketChannel("Specified player doesn't exist.");
+			}
+		}
+	}
+
+	public boolean isInCombat() {
+		return room.getPlayersInCombat().stream().anyMatch(this::equals);
 	}
 
 	/**
@@ -99,7 +146,7 @@ public class Player implements HasStats {
 	 */
 	private void printRoomContents() throws IOException {
 		writeToSocketChannel("these are the contents of the room");
-		List<Item> contents = room.getContents();
+		List<Item> contents = room.getItems();
 		for (Item item : contents) {
 			writeToSocketChannel(item.toString());
 		}
@@ -136,6 +183,9 @@ public class Player implements HasStats {
 		if (nextRoom == null) {
 			writeToSocketChannel("There is no door!");
 		} else {
+			// TODO: Decouple this
+			room.removePlayer(this);
+			nextRoom.addPlayer(this);
 			room = nextRoom;
 			writeToSocketChannel(room.getLongDescription());
 		}
@@ -170,8 +220,28 @@ public class Player implements HasStats {
 		return room;
 	}
 
+	public int getHitPoints() {
+		return hitPoints;
+	}
+
 	/**
+	 * Calculates and applies damage taken from an attack
+	 * inspired by Dota 2 (http://dota2.gamepedia.com/Armor#Damage_multiplier)
 	 *
+	 * @param attack of the enemy attacking
+	 * @return true if player dies from it, otherwise false
+	 */
+	boolean takeHit(int attack) {
+		int defense = getEffectiveDefense();
+		double damageMultiplier = (1 - 0.06 * defense / 1 + 0.06 * Math.abs(defense));
+		int effectiveDamage = (int) (attack * damageMultiplier);
+		hitPoints -= effectiveDamage;
+
+		// TODO: Handle player's health falling below zero
+		return hitPoints <= 0;
+	}
+
+	/**
 	 * @param getter stat of the Player and item that needs to be calculated
 	 * @return calculated stat
 	 */
@@ -182,11 +252,32 @@ public class Player implements HasStats {
 	}
 
 	/**
+	 * @return attack accounting for items the player owns
+	 */
+	public int getEffectiveAttack() {
+		return getStat(HasStats::getAttack);
+	}
+
+	/**
+	 * @return defense accounting for items the player owns
+	 */
+	public int getEffectiveDefense() {
+		return getStat(HasStats::getDefense);
+	}
+
+	/**
+	 * @return agility accounting for items the player owns
+	 */
+	public int getEffectiveAgility() {
+		return getStat(HasStats::getAgility);
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public int getAttack() {
-		return getStat(HasStats::getAttack);
+		return baseAttack;
 	}
 
 	/**
@@ -194,7 +285,7 @@ public class Player implements HasStats {
 	 */
 	@Override
 	public int getDefense() {
-		return getStat(HasStats::getDefense);
+		return baseDefense;
 	}
 
 	/**
@@ -202,6 +293,41 @@ public class Player implements HasStats {
 	 */
 	@Override
 	public int getAgility() {
-		return getStat(HasStats::getAgility);
+		return baseAgility;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Player player = (Player) o;
+
+		if (baseAttack != player.baseAttack) return false;
+		if (baseDefense != player.baseDefense) return false;
+		if (baseAgility != player.baseAgility) return false;
+		if (name != null ? !name.equals(player.name) : player.name != null) return false;
+		if (room != null ? !room.equals(player.room) : player.room != null) return false;
+		if (socketChannel != null ? !socketChannel.equals(player.socketChannel) : player.socketChannel != null)
+			return false;
+		return items != null ? items.equals(player.items) : player.items == null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		int result = name != null ? name.hashCode() : 0;
+		result = 31 * result + (room != null ? room.hashCode() : 0);
+		result = 31 * result + (socketChannel != null ? socketChannel.hashCode() : 0);
+		result = 31 * result + (items != null ? items.hashCode() : 0);
+		result = 31 * result + baseAttack;
+		result = 31 * result + baseDefense;
+		result = 31 * result + baseAgility;
+		return result;
 	}
 }

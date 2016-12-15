@@ -8,8 +8,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -26,32 +25,20 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 
 class Game {
+	/**
+	 * Item spawn chance in tenths of a percent
+	 */
+	private static final long MAX_ITEM_COUNT = 15;
+
 	private Room startingRoom;
-	private Map<SocketChannel, Player> playerMap;
+	private Map<SocketChannel, Player> playerMap = new HashMap<>();
+	private final List<Room> rooms;
 	private Selector selector;
 
 	/**
 	 * Create the game and initialise its internal map.
 	 */
 	public Game() {
-		createRooms();
-	}
-
-	public void initialize() throws IOException {
-		playerMap = new HashMap<>();
-
-		final ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
-		serverSocketChannel.configureBlocking(false);
-		serverSocketChannel.bind(new InetSocketAddress(InetAddress.getLocalHost(), 7331));
-
-		selector = Selector.open();
-		serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-	}
-
-	/**
-	 * Create all the rooms and link their exits together.
-	 */
-	private void createRooms() {
 		Room outside, theater, pub, lab, office;
 
 		// create the rooms
@@ -61,7 +48,6 @@ class Game {
 		lab = new Room("in a computing lab");
 		office = new Room("in the computing admin office");
 
-		// initialise room exits
 		outside.setExit(Direction.EAST, theater);
 		outside.setExit(Direction.SOUTH, lab);
 		outside.setExit(Direction.WEST, pub);
@@ -76,6 +62,27 @@ class Game {
 		office.setExit(Direction.WEST, lab);
 
 		startingRoom = outside; // start game outside
+
+		List<Room> rooms = new ArrayList<>();
+		rooms.add(outside);
+		rooms.add(theater);
+		rooms.add(theater);
+		rooms.add(pub);
+		rooms.add(lab);
+		rooms.add(office);
+
+		this.rooms = Collections.unmodifiableList(rooms);
+	}
+
+	public void initialize() throws IOException {
+
+		final ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+		serverSocketChannel.configureBlocking(false);
+		// TODO: Make port configurable
+		serverSocketChannel.bind(new InetSocketAddress(InetAddress.getLocalHost(), 7331));
+
+		selector = Selector.open();
+		serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 	}
 
 	/**
@@ -85,50 +92,84 @@ class Game {
 
 		//noinspection InfiniteLoopStatement
 		while (true) {
-			Room.triggerPotentialSpawns();
+			triggerPotentialSpawns();
 
 			selector.selectNow();
 			for (SelectionKey selectionKey : selector.selectedKeys()) {
 				if (selectionKey.isAcceptable()) {
-					ServerSocketChannel serverSocketChannel = (ServerSocketChannel) selectionKey.channel();
-					SocketChannel socketChannel = serverSocketChannel.accept();
-
-					socketChannel.configureBlocking(false);
-					socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-
-					long newUserId = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
-					final Player newPlayer = new Player("player" + newUserId,
-							startingRoom, socketChannel);
-					playerMap.put(socketChannel, newPlayer);
-
-					newPlayer.printWelcome();
+					acceptNewPlayer(selectionKey);
 				} else if (selectionKey.isReadable()) {
-					SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
-					ByteBuffer buffer = ByteBuffer.allocate(1024);
-					int numRead = socketChannel.read(buffer);
-					if (numRead > -1) {
-						Player player = playerMap.get(socketChannel);
-
-						byte[] data = new byte[numRead];
-						System.arraycopy(buffer.array(), 0, data, 0, numRead);
-						String input = new String(data);
-
-						boolean wantToQuit = player.handleInput(input);
-						if (wantToQuit) {
-							socketChannel.close();
-							playerMap.remove(socketChannel);
-						}
-					} else {
-						playerMap.remove(socketChannel);
-						socketChannel.close();
-						selectionKey.cancel();
-					}
+					readPlayerInput(selectionKey);
 				}
 			}
 
 			selector.selectedKeys().clear();
 
+			// TODO: Use elapsed time instead
 			Thread.sleep(500L);
+		}
+	}
+
+	private void removeAndCleanupPlayer(SelectionKey selectionKey, SocketChannel socketChannel) {
+		playerMap.remove(socketChannel);
+		try {
+			socketChannel.close();
+		} catch (IOException e) {
+		}
+		selectionKey.cancel();
+	}
+
+	private void triggerPotentialSpawns() {
+		long itemsCount = rooms
+				.stream()
+				.flatMap(r -> r.getItems().stream())
+				.count();
+
+		if (itemsCount < MAX_ITEM_COUNT) {
+			rooms.forEach(Room::spawnItemIfNecessary);
+		}
+	}
+
+	private void readPlayerInput(SelectionKey selectionKey) throws IOException {
+		SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
+		ByteBuffer buffer = ByteBuffer.allocate(1024);
+		int numRead = socketChannel.read(buffer);
+		if (numRead > -1) {
+			Player player = playerMap.get(socketChannel);
+
+			byte[] data = new byte[numRead];
+			System.arraycopy(buffer.array(), 0, data, 0, numRead);
+			String input = new String(data);
+
+			boolean wantToQuit = player.handleInput(input);
+			if (wantToQuit) {
+				socketChannel.close();
+				playerMap.remove(socketChannel);
+			}
+		} else {
+			removeAndCleanupPlayer(selectionKey, socketChannel);
+		}
+	}
+
+	private void acceptNewPlayer(SelectionKey selectionKey) {
+		SocketChannel socketChannel = null;
+		try {
+			ServerSocketChannel serverSocketChannel = (ServerSocketChannel) selectionKey.channel();
+			socketChannel = serverSocketChannel.accept();
+
+			socketChannel.configureBlocking(false);
+			socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+
+			long newUserId = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+			final Player newPlayer = new Player("player" + newUserId,
+					startingRoom, socketChannel);
+			playerMap.put(socketChannel, newPlayer);
+
+			startingRoom.addPlayer(newPlayer);
+
+			newPlayer.printWelcome();
+		} catch (IOException e) {
+			removeAndCleanupPlayer(selectionKey, socketChannel);
 		}
 	}
 }

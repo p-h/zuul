@@ -15,6 +15,7 @@ public enum CommandWord {
 	HELP("help"),
 	SETNAME("setname"),
 	LOOK("look"),
+	ATTACK("attack"),
 	UNKNOWN("?");
 
 	// The command string.
