@@ -100,8 +100,21 @@ public class Player implements HasStats {
 			case ATTACK:
 				handleAttack(command);
 				break;
+			case SAY:
+				String sentence = command.getSecondWord() + " " + command.getRest();
+				String message = this.getName() + ": " + sentence;
+				room.getPlayers().forEach(p -> p.tell(message));
+				break;
 		}
 		return wantToQuit;
+	}
+
+	private void tell(String message) {
+		try {
+			writeToSocketChannel(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void handleAttack(Command command) throws IOException {

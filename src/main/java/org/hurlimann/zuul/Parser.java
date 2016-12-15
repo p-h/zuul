@@ -20,8 +20,6 @@ import java.util.Scanner;
  */
 class Parser {
 	private final String input;
-	private CommandWords commands; // holds all valid command words
-	private Scanner reader; // source of command input
 
 	/**
 	 * Create a parser to read from the terminal window.
@@ -38,6 +36,7 @@ class Parser {
 	public Command getCommand() {
 		String word1 = null;
 		String word2 = null;
+		String rest = null;
 
 		// Find up to two words on the line.
 		try (Scanner tokenizer = new Scanner(input)) {
@@ -45,11 +44,11 @@ class Parser {
 				word1 = tokenizer.next(); // get first word
 				if (tokenizer.hasNext()) {
 					word2 = tokenizer.next(); // get second word
-					// note: we just ignore the rest of the input line.
+					rest = tokenizer.nextLine();
 				}
 			}
 		}
 
-		return new Command(CommandWords.getCommandWord(word1), word2);
+		return new Command(CommandWords.getCommandWord(word1), word2, rest);
 	}
 }

@@ -13,7 +13,7 @@ package org.hurlimann.zuul;
  * words. If the user entered an invalid command (a word that is not known) then
  * the CommandWord is UNKNOWN.
  * <p>
- * If the command had only one word, then the second word is <null>.
+ * If the command had only one word, then the second word and the rest are <null>.
  *
  * @author Michael Kölling and David J. Barnes
  * @version 2011.08.10
@@ -22,6 +22,7 @@ package org.hurlimann.zuul;
 public class Command {
 	private final CommandWord commandWord;
 	private final String secondWord;
+	private final String rest;
 
 	/**
 	 * Create a command object. First and second words must be supplied, but the
@@ -30,10 +31,12 @@ public class Command {
 	 * @param commandWord The CommandWord. UNKNOWN if the command word was not
 	 *                    recognised.
 	 * @param secondWord  The second word of the command. May be null.
+	 * @param rest The rest of the line sent by the player. May be null.
 	 */
-	public Command(CommandWord commandWord, String secondWord) {
+	public Command(CommandWord commandWord, String secondWord, String rest) {
 		this.commandWord = commandWord;
 		this.secondWord = secondWord;
+		this.rest = rest;
 	}
 
 	/**
@@ -51,6 +54,10 @@ public class Command {
 	 */
 	public String getSecondWord() {
 		return secondWord;
+	}
+
+	public String getRest() {
+		return rest;
 	}
 
 	/**
