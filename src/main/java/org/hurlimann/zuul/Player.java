@@ -145,9 +145,14 @@ public class Player implements HasStats {
 	 * Print out what items and players are in the room
 	 */
 	private void printRoomContents() throws IOException {
-		writeToSocketChannel("these are the contents of the room");
-		List<Item> contents = room.getItems();
-		for (Item item : contents) {
+		writeToSocketChannel("These are the contents of the room.");
+		writeToSocketChannel("Players:");
+		for (Player player : room.getPlayers()) {
+			writeToSocketChannel(player.toString());
+		}
+		writeToSocketChannel();
+		writeToSocketChannel("Items:");
+		for (Item item : room.getItems()) {
 			writeToSocketChannel(item.toString());
 		}
 	}
@@ -329,5 +334,16 @@ public class Player implements HasStats {
 		result = 31 * result + baseDefense;
 		result = 31 * result + baseAgility;
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return "Player{" +
+				"name='" + name + '\'' +
+				", Attack=" + getEffectiveAttack() +
+				", Defense=" + getEffectiveDefense() +
+				", Agility=" + getEffectiveAgility() +
+				", hitPoints=" + getHitPoints() +
+				'}';
 	}
 }
