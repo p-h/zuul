@@ -20,7 +20,7 @@ public class Player implements HasStats {
 
 	private List<Item> items = new ArrayList<>();
 
-	private int hitPoints;
+	private int hitPoints = 100;
 	private int baseAttack;
 	private int baseDefense;
 	private int baseAgility;
