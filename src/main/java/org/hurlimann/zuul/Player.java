@@ -106,6 +106,26 @@ public class Player implements HasStats {
 				String message = this.getName() + ": " + sentence;
 				room.getPlayers().forEach(p -> p.tell(message));
 				break;
+			case PICKUP:
+				String itemIdStr = command.getSecondWord();
+				if (itemIdStr == null || itemIdStr.isEmpty()) {
+					writeToSocketChannel("What item do you want to pick up?");
+				}
+				try {
+					int itemId = Integer.parseInt(itemIdStr);
+					Optional<Item> itemOptional = room.pickUpItem(itemId);
+					if (itemOptional.isPresent()) {
+						Item item = itemOptional.get();
+						items.add(item);
+						writeToSocketChannel("Congratulations on your brand new " + item.getName());
+					} else {
+						writeToSocketChannel("That item doesn't exist.");
+					}
+				} catch (NumberFormatException ex) {
+					writeToSocketChannel("That's not a valid number");
+				}
+
+				break;
 		}
 		return wantToQuit;
 	}

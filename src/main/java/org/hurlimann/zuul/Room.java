@@ -155,4 +155,16 @@ public class Room {
 					.findFirst();
 		}
 	}
+
+	public Optional<Item> pickUpItem(int itemId) {
+		Optional<Item> item = items
+				.stream().filter(i -> i.getId() == itemId)
+				.findFirst();
+
+		if (item.isPresent()) {
+			items.remove(item.get());
+		}
+
+		return item;
+	}
 }
