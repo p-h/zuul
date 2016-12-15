@@ -100,7 +100,12 @@ public class Room {
 		return Collections.unmodifiableList(items);
 	}
 
-	void spawnItemIfNecessary() {
+	void updateRoom() {
+		players.removeIf(Player::isToDelete);
+		spawnItemsIfNescessary();
+	}
+
+	private void spawnItemsIfNescessary() {
 		int random = ThreadLocalRandom.current().nextInt(0, 1000);
 		if (random < ITEM_SPAWN_CHANCE) {
 			this.items.add(RandomItemGenerator.generate());

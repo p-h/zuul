@@ -94,6 +94,16 @@ class Game {
 		while (true) {
 			triggerPotentialSpawns();
 
+			Iterator<Map.Entry<SocketChannel, Player>> it = playerMap.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<SocketChannel, Player> entry = it.next();
+				if (entry.getValue().isToDelete()) {
+					SocketChannel socketChannel = entry.getKey();
+					it.remove();
+					removeAndCleanupPlayer(socketChannel);
+				}
+			}
+
 			selector.selectNow();
 			for (SelectionKey selectionKey : selector.selectedKeys()) {
 				if (selectionKey.isAcceptable()) {
@@ -110,13 +120,18 @@ class Game {
 		}
 	}
 
-	private void removeAndCleanupPlayer(SelectionKey selectionKey, SocketChannel socketChannel) {
+	private void removeAndCleanupPlayer(SocketChannel socketChannel) {
 		playerMap.remove(socketChannel);
 		try {
 			socketChannel.close();
 		} catch (IOException e) {
+			e.printStackTrace();
 		}
+	}
+
+	private void removeAndCleanupPlayer(SocketChannel socketChannel, SelectionKey selectionKey) {
 		selectionKey.cancel();
+		removeAndCleanupPlayer(socketChannel);
 	}
 
 	private void triggerPotentialSpawns() {
@@ -126,7 +141,7 @@ class Game {
 				.count();
 
 		if (itemsCount < MAX_ITEM_COUNT) {
-			rooms.forEach(Room::spawnItemIfNecessary);
+			rooms.forEach(Room::updateRoom);
 		}
 	}
 
@@ -147,7 +162,7 @@ class Game {
 				playerMap.remove(socketChannel);
 			}
 		} else {
-			removeAndCleanupPlayer(selectionKey, socketChannel);
+			removeAndCleanupPlayer(socketChannel, selectionKey);
 		}
 	}
 
@@ -169,7 +184,7 @@ class Game {
 
 			newPlayer.printWelcome();
 		} catch (IOException e) {
-			removeAndCleanupPlayer(selectionKey, socketChannel);
+			removeAndCleanupPlayer(socketChannel, selectionKey);
 		}
 	}
 }

@@ -24,6 +24,7 @@ public class Player implements HasStats {
 	private int baseAttack;
 	private int baseDefense;
 	private int baseAgility;
+	private boolean toDelete = false;
 
 	public Player(String name, Room room, SocketChannel socketChannel) {
 		this.name = name;
@@ -249,16 +250,16 @@ public class Player implements HasStats {
 	 * inspired by Dota 2 (http://dota2.gamepedia.com/Armor#Damage_multiplier)
 	 *
 	 * @param attack of the enemy attacking
-	 * @return true if player dies from it, otherwise false
 	 */
-	boolean takeHit(int attack) {
+	void takeHit(int attack) {
 		int defense = getEffectiveDefense();
 		double damageMultiplier = (1 - 0.06 * defense / 1 + 0.06 * Math.abs(defense));
 		int effectiveDamage = (int) (attack * damageMultiplier);
 		hitPoints -= effectiveDamage;
 
-		// TODO: Handle player's health falling below zero
-		return hitPoints <= 0;
+		if (hitPoints <= 0) {
+			this.toDelete = true;
+		}
 	}
 
 	/**
@@ -360,5 +361,9 @@ public class Player implements HasStats {
 				", Agility=" + getEffectiveAgility() +
 				", hitPoints=" + getHitPoints() +
 				'}';
+	}
+
+	public boolean isToDelete() {
+		return toDelete;
 	}
 }
