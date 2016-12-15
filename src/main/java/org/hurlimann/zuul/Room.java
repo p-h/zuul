@@ -35,7 +35,7 @@ public class Room {
 				.count();
 
 		if (itemsCount < MAX_ITEM_COUNT) {
-			allRooms.forEach(Room::spawnItemIfNescessary);
+			allRooms.forEach(Room::spawnItemIfNecessary);
 		}
 	}
 
@@ -117,7 +117,7 @@ public class Room {
 		return Collections.unmodifiableList(items);
 	}
 
-	void spawnItemIfNescessary() {
+	void spawnItemIfNecessary() {
 		int random = ThreadLocalRandom.current().nextInt(0, 1000);
 		if (random < ITEM_SPAWN_CHANCE) {
 			this.items.add(RandomItemGenerator.generate());
