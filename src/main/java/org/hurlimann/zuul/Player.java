@@ -99,7 +99,6 @@ public class Player implements HasStats {
 			case SETNAME:
 				String newName = command.getSecondWord();
 				if (newName == null || newName.isEmpty()) {
-					// TODO: Handle possible duplicate names
 					writeToSocketChannel("Please provide a name.");
 				} else {
 					this.name = newName;
@@ -254,7 +253,6 @@ public class Player implements HasStats {
 		if (nextRoom == null) {
 			writeToSocketChannel("There is no door!");
 		} else {
-			// TODO: Decouple this
 			room.removePlayer(this);
 			nextRoom.addPlayer(this);
 			room = nextRoom;

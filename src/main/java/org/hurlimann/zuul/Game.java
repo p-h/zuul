@@ -85,7 +85,6 @@ class Game {
 
 		final ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);
-		// TODO: Make port configurable
 		serverSocketChannel.bind(new InetSocketAddress(InetAddress.getLocalHost(), 7331));
 
 		selector = Selector.open();
