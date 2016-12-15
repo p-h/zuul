@@ -30,6 +30,11 @@ class Game {
 	 */
 	private static final long MAX_ITEM_COUNT = 15;
 
+	/**
+	 * Time per frame in milliseconds
+	 */
+	private static final long TIME_PER_FRAME = 500;
+
 	private Room startingRoom;
 	private Map<SocketChannel, Player> playerMap = new HashMap<>();
 	private final List<Room> rooms;
@@ -94,6 +99,7 @@ class Game {
 
 		//noinspection InfiniteLoopStatement
 		while (true) {
+			final long timeAtStartOfFrame = System.currentTimeMillis();
 			triggerPotentialSpawns();
 
 			Iterator<Map.Entry<SocketChannel, Player>> it = playerMap.entrySet().iterator();
@@ -117,8 +123,13 @@ class Game {
 
 			selector.selectedKeys().clear();
 
-			// TODO: Use elapsed time instead
-			Thread.sleep(500L);
+			final long timeAtEndOfFrame = System.currentTimeMillis();
+			final long timeToSleep = TIME_PER_FRAME - (timeAtEndOfFrame - timeAtStartOfFrame);
+
+			if (timeToSleep > 0) {
+				Thread.sleep(timeToSleep);
+			}
+
 		}
 	}
 
