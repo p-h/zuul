@@ -79,8 +79,13 @@ public class Player implements HasStats {
 				break;
 			case SETNAME:
 				String newName = command.getSecondWord();
-				this.name = newName;
-				writeToSocketChannel("Hi " + newName + "!");
+				if (newName == null || newName.isEmpty()) {
+					// TODO: Handle possible duplicate names
+					writeToSocketChannel("Please provide a name.");
+				} else {
+					this.name = newName;
+					writeToSocketChannel("Hi " + newName + "!");
+				}
 				break;
 			case LOOK:
 				printRoomContents();
