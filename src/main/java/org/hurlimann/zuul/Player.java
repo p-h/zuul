@@ -183,6 +183,8 @@ public class Player implements HasStats {
 		String otherPlayerName = command.getSecondWord();
 		if (otherPlayerName == null || otherPlayerName.isEmpty()) {
 			writeToSocketChannel("Attack who?");
+		} else if (this.getName().equals(otherPlayerName)) {
+			writeToSocketChannel("Stop hitting yourself! Get help!");
 		} else {
 			Optional<Player> optionalPlayerToAttack = room.getPlayers()
 					.stream()
