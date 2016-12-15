@@ -105,11 +105,17 @@ public class Room {
 		spawnItemsIfNecessary();
 	}
 
+	/**
+	 * Removes players that are killed.
+	 */
 	private void handlePlayersToRemove() {
 		players.removeIf(Player::isToDelete);
 		combats.removeIf(c -> c.getPlayer1().isToDelete() || c.getPlayer2().isToDelete());
 	}
 
+	/**
+	 * Randomly spawns items or not.
+	 */
 	private void spawnItemsIfNecessary() {
 		int random = ThreadLocalRandom.current().nextInt(0, 1000);
 		if (random < ITEM_SPAWN_CHANCE) {
@@ -125,10 +131,17 @@ public class Room {
 	}
 
 
+	/**
+	 * Creates a combat object for two players
+	 * @param combat
+	 */
 	public void addCombat(Combat combat) {
 		combats.add(combat);
 	}
 
+	/**
+	 * @return an unmodifiable list of players that are currently engaged in combat.
+	 */
 	public List<Player> getPlayersInCombat() {
 		return Collections.unmodifiableList(
 				combats.stream()
@@ -137,30 +150,47 @@ public class Room {
 						.collect(Collectors.toList()));
 	}
 
+	/**
+	 * removes a player
+	 * @param player
+	 */
 	public void removePlayer(Player player) {
 		players.remove(player);
 	}
 
+	/**
+	 * adds a player
+	 * @param player
+	 */
 	public void addPlayer(Player player) {
 		players.add(player);
 	}
 
+	/**
+	 * @param player
+	 * @return Optionally the player if he is in combat
+	 */
 	public Optional<Player> getCombatingPlayer(Player player) {
 		Optional<Player> ifIsPlayer1 =
 				combats.stream()
 						.filter(c -> c.getPlayer1().equals(player))
-						.map(c -> c.getPlayer2())
+						.map(Combat::getPlayer2)
 						.findFirst();
 		if (ifIsPlayer1.isPresent()) {
 			return ifIsPlayer1;
 		} else {
 			return combats.stream()
 					.filter(c -> c.getPlayer2().equals(player))
-					.map(c -> c.getPlayer1())
+					.map(Combat::getPlayer1)
 					.findFirst();
 		}
 	}
 
+	/**
+	 * Transfers an item from the room to a player.
+	 * @param itemId
+	 * @return Optionally an Item
+	 */
 	public Optional<Item> pickUpItem(int itemId) {
 		Optional<Item> item = items
 				.stream().filter(i -> i.getId() == itemId)

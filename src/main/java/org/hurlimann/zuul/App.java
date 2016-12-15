@@ -1,11 +1,16 @@
 package org.hurlimann.zuul;
 
+/**
+ * Main class of the app.
+ */
 class App {
 
+	/**
+	 * Starting point of the app.
+	 */
 	public static void main(String[] args) {
-		Game myGame = new Game();
 		try {
-			myGame.initialize();
+			Game myGame = new Game();
 			myGame.play();
 		} catch (Exception e) {
 			e.printStackTrace();

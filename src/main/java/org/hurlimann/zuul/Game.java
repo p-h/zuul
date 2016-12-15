@@ -36,9 +36,9 @@ class Game {
 	private Selector selector;
 
 	/**
-	 * Create the game and initialise its internal map.
+	 * Create the game, initialise its internal map and opens sets up the network connection.
 	 */
-	public Game() {
+	public Game() throws IOException {
 		Room outside, theater, pub, lab, office, cafeteria;
 
 		// create the rooms
@@ -77,9 +77,6 @@ class Game {
 		rooms.add(cafeteria);
 
 		this.rooms = Collections.unmodifiableList(rooms);
-	}
-
-	public void initialize() throws IOException {
 
 		final ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);
@@ -125,6 +122,11 @@ class Game {
 		}
 	}
 
+	/**
+	 * Handles the cleanup of a player that is slated to be removed
+	 *
+	 * @param socketChannel
+	 */
 	private void removeAndCleanupPlayer(SocketChannel socketChannel) {
 		playerMap.remove(socketChannel);
 		try {
@@ -134,11 +136,20 @@ class Game {
 		}
 	}
 
+	/**
+	 * Handles the cleanup of a player that is slated to be removed
+	 *
+	 * @param socketChannel
+	 * @param selectionKey
+	 */
 	private void removeAndCleanupPlayer(SocketChannel socketChannel, SelectionKey selectionKey) {
 		selectionKey.cancel();
 		removeAndCleanupPlayer(socketChannel);
 	}
 
+	/**
+	 * Triggers spawnings every cycle
+	 */
 	private void triggerPotentialSpawns() {
 		long itemsCount = rooms
 				.stream()
@@ -150,6 +161,12 @@ class Game {
 		}
 	}
 
+	/**
+	 * Reads player input and decided what to do with it.
+	 * Removes players that want to quit or abruptly disconnect.
+	 * @param selectionKey
+	 * @throws IOException
+	 */
 	private void readPlayerInput(SelectionKey selectionKey) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
 		ByteBuffer buffer = ByteBuffer.allocate(1024);
@@ -171,6 +188,10 @@ class Game {
 		}
 	}
 
+	/**
+	 * Creates a new player and adds him to the appropriate collections.
+	 * @param selectionKey
+	 */
 	private void acceptNewPlayer(SelectionKey selectionKey) {
 		SocketChannel socketChannel = null;
 		try {

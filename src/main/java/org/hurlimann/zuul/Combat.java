@@ -3,7 +3,7 @@ package org.hurlimann.zuul;
 /**
  * Class representing a combat taking place between two players
  * a combat can only occur between two players
- * players which are engaged in combat cannot switch rooms, pick up items or interact with other players
+ * players which are engaged in combat cannot switch rooms
  */
 class Combat {
 	private Player player1;

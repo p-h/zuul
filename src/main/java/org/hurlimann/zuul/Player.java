@@ -11,7 +11,8 @@ import java.util.Optional;
 import java.util.function.ToIntFunction;
 
 /**
- * Class representing players in the game
+ * Class representing players in the game.
+ * Handles input and output with a particular player and interactions with other players
  */
 public class Player implements HasStats {
 	private String name;
@@ -32,11 +33,21 @@ public class Player implements HasStats {
 		this.socketChannel = socketChannel;
 	}
 
+	/**
+	 * Sends a message to a particular player
+	 *
+	 * @param message to send to the player
+	 * @throws IOException
+	 */
 	private void writeToSocketChannel(String message) throws IOException {
 		CharsetEncoder enc = Charset.defaultCharset().newEncoder();
 		socketChannel.write(enc.encode(CharBuffer.wrap(message + "\n")));
 	}
 
+	/**
+	 * Sends a newline to a player
+	 * @throws IOException
+	 */
 	private void writeToSocketChannel() throws IOException {
 		writeToSocketChannel("");
 	}
@@ -110,26 +121,31 @@ public class Player implements HasStats {
 				String itemIdStr = command.getSecondWord();
 				if (itemIdStr == null || itemIdStr.isEmpty()) {
 					writeToSocketChannel("What item do you want to pick up?");
-				}
-				try {
-					int itemId = Integer.parseInt(itemIdStr);
-					Optional<Item> itemOptional = room.pickUpItem(itemId);
-					if (itemOptional.isPresent()) {
-						Item item = itemOptional.get();
-						items.add(item);
-						writeToSocketChannel("Congratulations on your brand new " + item.getName());
-					} else {
-						writeToSocketChannel("That item doesn't exist.");
+				} else {
+					try {
+						int itemId = Integer.parseInt(itemIdStr);
+						Optional<Item> itemOptional = room.pickUpItem(itemId);
+						if (itemOptional.isPresent()) {
+							Item item = itemOptional.get();
+							items.add(item);
+							writeToSocketChannel("Congratulations on your brand new " + item.getName());
+						} else {
+							writeToSocketChannel("That item doesn't exist.");
+						}
+					} catch (NumberFormatException ex) {
+						writeToSocketChannel("That's not a valid number");
 					}
-				} catch (NumberFormatException ex) {
-					writeToSocketChannel("That's not a valid number");
 				}
-
 				break;
 		}
 		return wantToQuit;
 	}
 
+	/**
+	 * Sends a message to a player
+	 * use this method if you don't mind if it fails.
+	 * @param message
+	 */
 	private void tell(String message) {
 		try {
 			writeToSocketChannel(message);
@@ -138,6 +154,12 @@ public class Player implements HasStats {
 		}
 	}
 
+	/**
+	 * Handles an attack on another player.
+	 * Either triggers an attack if a player is already in combat or creates a new combat.
+	 * @param command
+	 * @throws IOException
+	 */
 	private void handleAttack(Command command) throws IOException {
 		if (isInCombat()) {
 			Optional<Player> otherPlayerOptional = room.getCombatingPlayer(this);
@@ -153,6 +175,11 @@ public class Player implements HasStats {
 		}
 	}
 
+	/**
+	 * Creates a new combat with another player
+	 * @param command
+	 * @throws IOException
+	 */
 	private void initiateCombat(Command command) throws IOException {
 		String otherPlayerName = command.getSecondWord();
 		if (otherPlayerName == null || otherPlayerName.isEmpty()) {
@@ -173,6 +200,9 @@ public class Player implements HasStats {
 		}
 	}
 
+	/**
+	 * @return wheter or not a player is in combat
+	 */
 	public boolean isInCombat() {
 		return room.getPlayersInCombat().stream().anyMatch(this::equals);
 	}
